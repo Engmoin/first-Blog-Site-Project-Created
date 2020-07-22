@@ -38,14 +38,17 @@ class Post(models.Model):
     def __str__(self):
       return self.title 
       
+    """def get_absolute_url(self):
+       return reverse('post-detail', kwargs={'pk':self.pk,'slug':self.slug})"""
     def get_absolute_url(self):
-       return reverse('post-detail', kwargs={'pk':self.pk,'slug':self.slug})
+      from django.urls import reverse
+      return reverse("post-detail", kwargs={"slug": str(self.slug)})
     
-def slug_save(sender,instance,*args,**kwargs):
+"""def slug_save(sender,instance,*args,**kwargs):
   if not instance.slug:
     instance.slug = unique_slug_generator(instance, instance.title, instance.slug)
 
-pre_save.connect(slug_save, sender=Post)
+pre_save.connect(slug_save, sender=Post)"""
 
 
 class Comment(models.Model):

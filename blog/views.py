@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.views.generic import (
     ListView,
-    #DetailView,
+    DetailView,
     CreateView,
     UpdateView,
     DeleteView
@@ -39,11 +39,12 @@ class UserPostListView(ListView):
         user = get_object_or_404(User,username=self.kwargs.get('username'))
         return Post.objects.filter(author=user).order_by('-publish')
   
-
-"""class PostDetailView(DetailView,CommentForm):
+class PostDetailView(DetailView):
     model = Post
-    model= Comment
-    success_url = 'post-detail'"""
+    #success_url = 'post-detail'
+    #context_object_name = 'post'
+    slug_field = 'slug'
+    slug_url_kwargs = 'slug'
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -120,25 +121,33 @@ def post_share(request , post_id): # send mail
         'post': q
     }
     return render(request, 'posts/details.html', context)"""
-def post_detail(request, year, month, day, post):
-	post = get_object_or_404(Post, slug=post,status='published',publish__year=year,publish__month=month,publish__day=day)
-	comments = post.comments.filter(active=True)
-	#print comments	
-	# for comment in comments:
-	# 	for reply in comment.replies.all():
-	# 		print reply.body
-	# 		# print reply.__dict__
 
-	# rpy = Comment.objects.filter(active=True)	
-	if request.method == 'POST':
-		comment_form = CommentForm(data=request.POST)
-		if comment_form.is_valid():
-			new_comment = comment_form.save(commit=False)
-			# Assign the current post to the comment
-			new_comment.post = post
-			# Save the comment to the database
-			new_comment.save()
-	else:
-		comment_form = CommentForm()
+def post_detail(request, slug):
+    template_name = "post_detail.html"
+    post = get_object_or_404(Post, slug=slug)
+    comments = post.comments.filter(active=True).order_by("-created")
+    new_comment = None
+    # Comment posted
+    if request.method == "POST":
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
 
-	return render(request,'blog//post_detail.html',{'post': post,'comments': comments,'comment_form': comment_form})
+            # Create Comment object but don't save to database yet
+            new_comment = comment_form.save(commit=False)
+            # Assign the current post to the comment
+            new_comment.post = post
+            # Save the comment to the database
+            new_comment.save()
+    else:
+        comment_form = CommentForm()
+
+    return render(
+        request,
+        template_name,
+        {
+            "post": post,
+            "comments": comments,
+            "new_comment": new_comment,
+            "comment_form": comment_form,
+        },
+    )

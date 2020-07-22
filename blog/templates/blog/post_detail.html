@@ -3,12 +3,13 @@
 {% block content %}
 
 </div>
+
   <article class="media content-section">
-    <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
+    <img class="rounded-circle article-img" src="{{ obj.author.profile.image.url }}">
     <div class="media-body">
       <div class="article-metadata">
-        <a class="mr-2" href="#">{{ object.author }}</a>
-        <small class="text-muted">{{ object.date_posted|date:"F d, Y" |timesince}} ago</small>
+        <a class="mr-2" href="#">{{ obj.author }}</a>
+        <small class="text-muted">{{ obj.date_posted|date:"F d, Y" |timesince }} ago</small>
         {% if object.author == user %}
           <div>
             <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a>
@@ -16,8 +17,8 @@
           </div>
         {% endif %}
       </div>
-      <h2 class="article-title">{{ object.title }}</h2>
-      <p class="article-content">{{ object.content|truncatewords:30|linebreaks  }}</p>
+      <h2 class="article-title">{{ obj.title }}</h2>
+      <p class="article-content">{{ obj.content|truncatewords:30|linebreaks  }}</p>
       <p>
         <a href="{% url 'post_share' post.id %}">
         Share this post
@@ -29,35 +30,46 @@
   <br>
  <div>
   
-{% for comment in comments %}
-<div class="comment">
-<p class="info">
-Comment {{ forloop.counter }} by {{ comment.name }}
-{{ comment.created }}
-</p>
-{{ comment.body|linebreaks }}
+{<div class="col-md-8 card mb-4  mt-3 ">
+  <div class="card-body">
+    <!-- comments -->
+    {% with comments.count as total_comments %}
+    <h2>{{ total_comments }} comments</h2>
+
+    <p>
+      {% endwith %} {% for comment in comments %}
+    </p>
+
+    <div class="comments" style="padding: 10px;">
+      <p class="font-weight-bold">
+        {{ comment.name }}
+        <span class=" text-muted font-weight-normal">
+          {{ comment.created_on }}
+        </span>
+      </p>
+      {{ comment.body | linebreaks }}
+    </div>
+
+    {% endfor %}
+  </div>
 </div>
-{% for reply in comment.replies.all %}
-&nbsp;&nbsp;&nbsp;&nbsp;{{reply.name}}:- {{ reply.body }}
-{% endfor%}
+<div class="col-md-8 card mb-4  mt-3 ">
+  <div class="card-body">
+    {% if new_comment %}
+    <div class="alert alert-success" role="alert">
+      Your comment is awaiting moderation
+    </div>
+    {% else %}
+    <h3>Leave a comment</h3>
+    <form method="post" style="margin-top: 1.3em;">
+      {{ comment_form | crispy }}
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary  btn-lg">Submit</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+</div>
+</div>
 
-
-{% empty %}
-<p>There are no comments yet.</p>
-{% endfor %}
-
-
-{% if new_comment %}
-<h2>Your comment has been added.</h2>
-{% else %}
-
-<hr>
-<br/><br/><br/><br/>
-<h2>Add a new comment</h2>
-<form action="." method="post">
-{{ comment_form.as_p }}
-{% csrf_token %}
-<p><input type="submit" value="Add comment"></p>
-</form>
-{% endif %}
 {% endblock %}
