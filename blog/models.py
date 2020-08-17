@@ -40,13 +40,15 @@ class Post(models.Model):
       
     """def get_absolute_url(self):
        return reverse('post-detail', kwargs={'pk':self.pk,'slug':self.slug})"""
+
     def get_absolute_url(self):
-      from django.urls import reverse
-      return reverse("post-detail", kwargs={"slug": str(self.slug)})
-    
-"""def slug_save(sender,instance,*args,**kwargs):
-  if not instance.slug:
-    instance.slug = unique_slug_generator(instance, instance.title, instance.slug)
+      return reverse('post_detail', kwargs={
+        'slug': self.slug 
+        })
+
+    """def slug_save(sender,instance,*args,**kwargs):
+      if not instance.slug:
+        instance.slug = unique_slug_generator(instance, instance.title, instance.slug)
 
 pre_save.connect(slug_save, sender=Post)"""
 
@@ -75,17 +77,16 @@ class Comment(models.Model):
 
         #return super().save(*args, **kwargs)
 
-"""def slug_generator(sender,instance,*args,**kwargs):
+def slug_generator(sender,instance,*args,**kwargs):
   if not instance.slug:
-    instance.slug = unique_slug_generator(instance)"""
+    instance.slug = unique_slug_generator(instance)
     
-#def pre_save_post_recever(sender,instance,*args,**kwargs):
- # slug = slugify(instance.title)
-
- # exists = Post.objects.filter(slug=slug).exists()
-  #if exists:
-    #slug="%s-%s" %(slug,instance.id)
-   # instance.slug = slug
+def pre_save_post_recever(sender,instance,*args,**kwargs):
+   slug = slugify(instance.title)
+   exists = Post.objects.filter(slug=slug).exists()
+   if exists:
+     slug="%s-%s" %(slug,instance.id)
+     instance.slug = slug
 
 
 
